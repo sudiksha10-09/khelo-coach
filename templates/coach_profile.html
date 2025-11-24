@@ -6,13 +6,23 @@
     <div class="section-header">
         <div>
             <h1 class="section-title">Coach profile</h1>
-            <p class="section-subtitle">A quick summary of this coach's experience.</p>
+            <p class="section-subtitle">Summary of this coach's experience.</p>
         </div>
     </div>
 
     <section class="profile-wrapper">
         <div class="profile-header">
-            <div class="profile-avatar">👤</div>
+            {% if coach.photo_url %}
+                <img src="{{ coach.photo_url }}"
+                     alt="{{ coach.user.full_name }}"
+                     style="width:64px;height:64px;border-radius:18px;object-fit:cover;">
+            {% elif coach.photo_filename %}
+                <img src="{{ url_for('static', filename='uploads/' ~ coach.photo_filename) }}"
+                     alt="{{ coach.user.full_name }}"
+                     style="width:64px;height:64px;border-radius:18px;object-fit:cover;">
+            {% else %}
+                <div class="profile-avatar">👤</div>
+            {% endif %}
             <div>
                 <div class="profile-name">{{ coach.user.full_name }}</div>
                 <p>{{ coach.sport }} Coach · {{ coach.location }}</p>
@@ -27,6 +37,16 @@
             <p><strong>Rate:</strong> {{ coach.rate or "-" }}</p>
             <p><strong>Availability:</strong> {{ coach.availability or "-" }}</p>
             <p><strong>Bio:</strong> {{ coach.bio or "Coach has not added a bio yet." }}</p>
+
+            {% if coach.resume_filename %}
+            <p style="margin-top:10px;">
+                <strong>Resume:</strong>
+                <a href="{{ url_for('static', filename='uploads/' ~ coach.resume_filename) }}"
+                   target="_blank">
+                    View / download resume
+                </a>
+            </p>
+            {% endif %}
         </div>
     </section>
 </section>

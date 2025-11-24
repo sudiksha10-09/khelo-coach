@@ -22,7 +22,7 @@
         <button class="btn btn-primary" type="submit">Login</button>
     </form>
 
-    {% if google_oauth %}
+    {% if google_oauth_enabled %}
     <div style="margin-top:12px;">
         <a href="{{ url_for('login_google') }}" class="btn btn-ghost btn-small">
             Login with Google

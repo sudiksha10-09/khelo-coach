@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Login / Sign up{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Welcome to Khelo Coach</h1>
+            <p class="section-subtitle">
+                Log in or create an account to manage profiles and jobs.
+            </p>
+        </div>
+    </div>
+
+    <div class="form-card" style="max-width:720px; display:flex; gap:32px;">
+        <!-- Left: Login -->
+        <div style="flex:1;">
+            <h2 style="font-size:16px; margin-bottom:8px;">
+                Login
+            </h2>
+            <p style="font-size:12px; color:#6b7280; margin-bottom:12px;">
+                Existing coaches and recruiters.
+            </p>
+
+            <form method="post" action="{{ url_for('login') }}">
+                <div class="form-row">
+                    <label for="login-email">Email</label>
+                    <input id="login-email" name="email" type="email" required>
+                </div>
+                <div class="form-row">
+                    <label for="login-password">Password</label>
+                    <input id="login-password" name="password" type="password" required>
+                </div>
+                <button class="btn btn-primary" type="submit">Login</button>
+            </form>
+
+            {% if google_oauth_enabled %}
+            <div style="margin-top:12px;">
+                <a href="{{ url_for('login_google') }}" class="btn btn-ghost btn-small">
+                    Login with Google
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Sign up -->
+        <div style="flex:1;">
+            <h2 style="font-size:16px; margin-bottom:8px;">
+                Sign up
+            </h2>
+            <p style="font-size:12px; color:#6b7280; margin-bottom:12px;">
+                New to Khelo Coach? Create your account.
+            </p>
+
+            <form method="post" action="{{ url_for('register') }}">
+                <div class="form-row">
+                    <label for="full_name">Full name</label>
+                    <input id="full_name" name="full_name" required>
+                </div>
+                <div class="form-row">
+                    <label for="reg-email">Email</label>
+                    <input id="reg-email" name="email" type="email" required>
+                </div>
+                <div class="form-row">
+                    <label for="reg-password">Password</label>
+                    <input id="reg-password" name="password" type="password" required>
+                </div>
+                <div class="form-row">
+                    <label for="role">I am a…</label>
+                    <select id="role" name="role" required>
+                        <option value="coach">Coach</option>
+                        <option value="recruiter">Recruiter / academy</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-ghost" type="submit">Create account</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

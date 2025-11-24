@@ -14,7 +14,11 @@
         </div>
     </div>
 
-    <form method="post" class="form-card" style="max-width:640px;">
+    <form method="post"
+          enctype="multipart/form-data"
+          class="form-card"
+          style="max-width:640px;">
+
         <div class="form-row">
             <label for="sport">Sport category</label>
             <input id="sport" name="sport" required
@@ -60,6 +64,42 @@
         <div class="form-row">
             <label for="bio">Bio</label>
             <textarea id="bio" name="bio">{{ profile.bio if profile else "" }}</textarea>
+        </div>
+
+        <!-- Image options -->
+        <div class="form-row">
+            <label for="photo_url">Profile image URL (optional)</label>
+            <input id="photo_url" name="photo_url"
+                   placeholder="https://example.com/coach-photo.jpg"
+                   value="{{ profile.photo_url if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label>Or upload profile image</label>
+            <div class="upload-box">
+                <input type="file" name="photo_upload" accept="image/*">
+                <div style="font-size:11px;margin-top:4px;">
+                    PNG, JPG, JPEG, WEBP up to 16MB.
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume upload -->
+        <div class="form-row">
+            <label>Upload resume (optional)</label>
+            <div class="upload-box">
+                <input type="file" name="resume_upload" accept=".pdf,.doc,.docx">
+                <div style="font-size:11px;margin-top:4px;">
+                    PDF / DOC / DOCX up to 16MB.
+                </div>
+                {% if profile and profile.resume_filename %}
+                    <div style="margin-top:6px;font-size:12px;">
+                        Current file:
+                        <a href="{{ url_for('static', filename='uploads/' ~ profile.resume_filename) }}"
+                           target="_blank">Download resume</a>
+                    </div>
+                {% endif %}
+            </div>
         </div>
 
         <button class="btn btn-primary" type="submit">Save profile</button>

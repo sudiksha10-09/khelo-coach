@@ -22,7 +22,9 @@
             </div>
         </aside>
 
-        <form method="post" class="form-card">
+        <form method="post"
+              enctype="multipart/form-data"
+              class="form-card">
             <h2 style="font-size:15px;margin-bottom:12px;">Apply form</h2>
 
             <div class="form-row">
@@ -38,6 +40,16 @@
             <div class="form-row">
                 <label for="app-notes">Notes (optional)</label>
                 <textarea id="app-notes" name="notes"></textarea>
+            </div>
+
+            <div class="form-row">
+                <label>Upload resume (optional)</label>
+                <div class="upload-box">
+                    <input type="file" name="resume_upload" accept=".pdf,.doc,.docx">
+                    <div style="font-size:11px;margin-top:4px;">
+                        PDF / DOC / DOCX up to 16MB.
+                    </div>
+                </div>
             </div>
 
             <button class="btn btn-primary" type="submit">Submit application</button>
