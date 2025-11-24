@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Login{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Welcome back</h1>
+            <p class="section-subtitle">Log in to manage your profile or jobs.</p>
+        </div>
+    </div>
+
+    <form method="post" class="form-card" style="max-width:380px;">
+        <div class="form-row">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required>
+        </div>
+        <div class="form-row">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required>
+        </div>
+        <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+
+    {% if google_oauth %}
+    <div style="margin-top:12px;">
+        <a href="{{ url_for('login_google') }}" class="btn btn-ghost btn-small">
+            Login with Google
+        </a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Become a Coach{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">
+                {{ "Edit your coach profile" if profile else "Create your coach profile" }}
+            </h1>
+            <p class="section-subtitle">
+                This is what recruiters will see when they shortlist you.
+            </p>
+        </div>
+    </div>
+
+    <form method="post" class="form-card" style="max-width:640px;">
+        <div class="form-row">
+            <label for="sport">Sport category</label>
+            <input id="sport" name="sport" required
+                   value="{{ profile.sport if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label for="location">Base location</label>
+            <input id="location" name="location" required
+                   value="{{ profile.location if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label for="experience">Experience (years)</label>
+            <input id="experience" name="experience" type="number" min="0"
+                   value="{{ profile.experience_years if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label for="certificates">Certifications</label>
+            <input id="certificates" name="certificates"
+                   value="{{ profile.certificates if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label for="locations_served">Locations served</label>
+            <input id="locations_served" name="locations_served"
+                   value="{{ profile.locations_served if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label for="rate">Rate (session / month)</label>
+            <input id="rate" name="rate"
+                   value="{{ profile.rate if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label for="availability">Availability</label>
+            <input id="availability" name="availability"
+                   value="{{ profile.availability if profile else '' }}">
+        </div>
+
+        <div class="form-row">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio">{{ profile.bio if profile else "" }}</textarea>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Save profile</button>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Jobs{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Jobs</h1>
+            <p class="section-subtitle">
+                Roles posted by schools, academies and clubs.
+            </p>
+        </div>
+        {% if current_user.is_authenticated and current_user.role == "recruiter" %}
+            <a href="{{ url_for('new_job') }}" class="btn btn-ghost btn-small">Post job</a>
+        {% endif %}
+    </div>
+
+    <form method="get" class="filter-row">
+        <input type="text" name="sport" placeholder="Sport" value="{{ sport }}">
+        <input type="text" name="location" placeholder="Location" value="{{ location }}">
+        <button class="btn btn-small btn-primary" type="submit">Filter</button>
+        <a href="{{ url_for('jobs_listing') }}" class="btn btn-small btn-ghost">Clear</a>
+    </form>
+
+    <div class="card-grid" style="margin-top:18px;">
+        {% for job in jobs %}
+        <article class="card job-card">
+            <h3>{{ job.title }}</h3>
+            <p>{{ job.location }}</p>
+            <p class="card-meta">{{ job.salary or "Budget on discussion" }}</p>
+            <div class="card-footer">
+                <span style="font-size:12px;color:#6b7280;">
+                    {{ job.sport or "Any sport" }}
+                </span>
+                <a href="{{ url_for('apply_for_job', job_id=job.id) }}"
+                   class="btn btn-small btn-primary">Apply</a>
+            </div>
+        </article>
+        {% else %}
+        <p style="font-size:13px;color:#6b7280;margin-top:10px;">
+            No jobs found yet – seed some in the DB.
+        </p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

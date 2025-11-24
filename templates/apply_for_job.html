@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Apply for {{ job.title }}{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Apply for job</h1>
+            <p class="section-subtitle">{{ job.title }}</p>
+        </div>
+    </div>
+
+    <div class="apply-layout">
+        <aside class="job-details-card">
+            <h2 style="font-size:15px;">Job details</h2>
+            <div class="job-details-inner">
+                <p><strong>Title:</strong> {{ job.title }}</p>
+                <p><strong>Sport:</strong> {{ job.sport or "Any sport" }}</p>
+                <p><strong>Location:</strong> {{ job.location }}</p>
+                <p><strong>Salary:</strong> {{ job.salary or "On discussion" }}</p>
+                <p><strong>Experience required:</strong> {{ job.experience_required or "-" }}</p>
+            </div>
+        </aside>
+
+        <form method="post" class="form-card">
+            <h2 style="font-size:15px;margin-bottom:12px;">Apply form</h2>
+
+            <div class="form-row">
+                <label for="app-name">Name</label>
+                <input id="app-name" name="name" type="text" required>
+            </div>
+
+            <div class="form-row">
+                <label for="app-exp">Experience</label>
+                <input id="app-exp" name="experience" type="text" required>
+            </div>
+
+            <div class="form-row">
+                <label for="app-notes">Notes (optional)</label>
+                <textarea id="app-notes" name="notes"></textarea>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Submit application</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

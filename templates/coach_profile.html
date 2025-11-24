@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – {{ coach.user.full_name }}{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Coach profile</h1>
+            <p class="section-subtitle">A quick summary of this coach's experience.</p>
+        </div>
+    </div>
+
+    <section class="profile-wrapper">
+        <div class="profile-header">
+            <div class="profile-avatar">👤</div>
+            <div>
+                <div class="profile-name">{{ coach.user.full_name }}</div>
+                <p>{{ coach.sport }} Coach · {{ coach.location }}</p>
+            </div>
+        </div>
+
+        <div class="profile-details">
+            <p><strong>Sport category:</strong> {{ coach.sport }}</p>
+            <p><strong>Experience (years):</strong> {{ coach.experience_years }}</p>
+            <p><strong>Certificates:</strong> {{ coach.certificates or "-" }}</p>
+            <p><strong>Locations served:</strong> {{ coach.locations_served or "-" }}</p>
+            <p><strong>Rate:</strong> {{ coach.rate or "-" }}</p>
+            <p><strong>Availability:</strong> {{ coach.availability or "-" }}</p>
+            <p><strong>Bio:</strong> {{ coach.bio or "Coach has not added a bio yet." }}</p>
+        </div>
+    </section>
+</section>
+{% endblock %}

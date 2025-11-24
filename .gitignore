@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+khelo_coach.db
+instance/
+google_creds.json
+.env

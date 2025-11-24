@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Find Verified Sports Coaches{% endblock %}
+
+{% block content %}
+
+<section class="hero-wrapper" data-reveal>
+    <div class="hero-bg"></div>
+    <div class="hero">
+        <div>
+            <div class="hero-highlight">Sports hiring made simple</div>
+            <h1 class="hero-heading">
+                Find verified coaches for your academies, schools & sports clubs.
+            </h1>
+            <p class="hero-subtitle">
+                A focused marketplace for sports coaches and recruiters. Compare profiles,
+                view experience and hire with confidence.
+            </p>
+
+            <div class="hero-cta-row">
+                <a href="{{ url_for('coach_listing') }}" class="btn btn-primary">
+                    Browse coaches
+                </a>
+                <a href="{{ url_for('jobs_listing') }}" class="btn btn-ghost">
+                    View open jobs
+                </a>
+            </div>
+
+            <div class="search-wrapper">
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text"
+                           placeholder="Search coming soon – use filters on coaches & jobs pages">
+                </div>
+            </div>
+
+            <div class="hero-stats">
+                <span><strong>Dual-sided</strong> · Coaches & recruiters</span>
+                <span><strong>Structured profiles</strong> · Experience, certs, rates</span>
+                <span><strong>India-first</strong> · Built for local sports</span>
+            </div>
+        </div>
+
+        <aside class="hero-card">
+            <!-- Replace with your own illustration / image -->
+            <div class="hero-card-title">Live snapshot</div>
+            <p style="font-size:13px;color:#6b7280;">Sample data for prototype</p>
+
+            <div class="hero-card-tags">
+                <span class="tag-pill">⚽ Football · 20+ yrs</span>
+                <span class="tag-pill">🏏 Cricket · Pune</span>
+                <span class="tag-pill">🏊‍♀️ Swimming · Bengaluru</span>
+                <span class="tag-pill">🥋 Martial Arts · Kids</span>
+            </div>
+
+            <p style="margin-top:12px;font-size:12px;color:#6b7280;">
+                Recruiters get a clean shortlist instead of random WhatsApp forwards.
+            </p>
+        </aside>
+    </div>
+</section>
+
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Featured coaches</h2>
+            <p class="section-subtitle">Sample profiles from the platform.</p>
+        </div>
+        <a href="{{ url_for('coach_listing') }}" class="btn btn-ghost btn-small">
+            View all coaches
+        </a>
+    </div>
+
+    <div class="card-grid">
+        {% for c in featured_coaches %}
+        <article class="card">
+            <h3>{{ c.user.full_name }}</h3>
+            <p>{{ c.sport }} · {{ c.location }}</p>
+            <p class="card-meta">{{ c.experience_years }} yrs experience</p>
+            <div class="card-footer">
+                <span style="font-size:12px;color:#6b7280;">
+                    {{ c.locations_served or "India" }}
+                </span>
+                <a href="{{ url_for('coach_profile', coach_id=c.id) }}"
+                   class="btn btn-small btn-ghost">View profile</a>
+            </div>
+        </article>
+        {% else %}
+        <p style="font-size:13px;color:#6b7280;">
+            No coach profiles yet – once you add some via DB or sign up, they’ll show here.
+        </p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Recent jobs</h2>
+            <p class="section-subtitle">A quick view of the type of roles posted.</p>
+        </div>
+        <a href="{{ url_for('jobs_listing') }}" class="btn btn-ghost btn-small">
+            View all jobs
+        </a>
+    </div>
+
+    <div class="card-grid">
+        {% for j in featured_jobs %}
+        <article class="card job-card">
+            <h3>{{ j.title }}</h3>
+            <p>{{ j.location }}</p>
+            <p class="card-meta">{{ j.salary or "Budget on discussion" }}</p>
+            <div class="card-footer">
+                <span style="font-size:12px;color:#6b7280;">
+                    {{ j.sport or "Any sport" }}
+                </span>
+                <a href="{{ url_for('apply_for_job', job_id=j.id) }}"
+                   class="btn btn-small btn-primary">Apply</a>
+            </div>
+        </article>
+        {% else %}
+        <p style="font-size:13px;color:#6b7280;">
+            No jobs added yet – create some in DB or via recruiter account.
+        </p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">How Khelo Coach fits in your workflow</h2>
+            <p class="section-subtitle">
+                Designed for academies, schools and independent coaches.
+            </p>
+        </div>
+    </div>
+
+    <div class="card-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+        <article class="card">
+            <h3>1. Structured profiles</h3>
+            <p>Coaches create a single profile that clearly lists experience, certifications and rates.</p>
+        </article>
+        <article class="card">
+            <h3>2. Transparent requirements</h3>
+            <p>Recruiters post roles with sport, location, salary band and expectations.</p>
+        </article>
+        <article class="card">
+            <h3>3. Direct conversations</h3>
+            <p>Once shortlisted, you can take the conversation to email, WhatsApp or your HR process.</p>
+        </article>
+    </div>
+</section>
+
+<!-- Optional video section; add your own mp4 in static/video/demo.mp4 -->
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">See it in action (30s)</h2>
+            <p class="section-subtitle">Short walkthrough for demos.</p>
+        </div>
+    </div>
+
+    <video src="{{ url_for('static', filename='video/demo.mp4') }}"
+           muted autoplay loop playsinline
+           style="width:100%; border-radius:18px; box-shadow:var(--shadow-soft); max-height:360px; object-fit:cover;">
+        Your browser does not support the video tag.
+    </video>
+</section>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Khelo Coach{% endblock %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="top-bar">
+    <div class="brand">
+        <a href="{{ url_for('home') }}">Khelo Coach</a>
+    </div>
+    <div class="nav-buttons">
+        {% if current_user.is_authenticated %}
+            <span style="font-size:13px;color:#6b7280;margin-right:4px;">
+                Hi, {{ current_user.full_name.split(' ')[0] }}
+                <span style="opacity:0.7;">({{ current_user.role }})</span>
+            </span>
+            {% if current_user.role == "coach" %}
+                <a href="{{ url_for('become_coach') }}" class="nav-btn secondary">My profile</a>
+            {% elif current_user.role == "recruiter" %}
+                <a href="{{ url_for('new_job') }}" class="nav-btn secondary">Post job</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="nav-btn secondary">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="nav-btn secondary">Login</a>
+            <a href="{{ url_for('register') }}" class="nav-btn primary">Sign up</a>
+        {% endif %}
+    </div>
+</header>
+
+<main class="page">
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <div class="footer">
+        © 2025 Khelo Coach · Prototype
+    </div>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // simple scroll reveal
+  const revealEls = document.querySelectorAll("[data-reveal]");
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+      }
+    });
+  }, { threshold: 0.15 });
+
+  revealEls.forEach(el => observer.observe(el));
+
+  // light parallax for hero background
+  const heroBg = document.querySelector(".hero-bg");
+  if (heroBg) {
+    window.addEventListener("scroll", () => {
+      const offset = window.scrollY * 0.25;
+      heroBg.style.transform = `translateY(${offset * -1}px)`;
+    });
+  }
+});
+</script>
+
+</body>
+</html>

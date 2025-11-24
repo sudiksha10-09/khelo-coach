@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Register{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Create your account</h1>
+            <p class="section-subtitle">
+                Sign up as a coach or recruiter. You can add details later.
+            </p>
+        </div>
+    </div>
+
+    <form method="post" class="form-card" style="max-width:460px;">
+        <div class="form-row">
+            <label for="full_name">Full name</label>
+            <input id="full_name" name="full_name" required>
+        </div>
+        <div class="form-row">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required>
+        </div>
+        <div class="form-row">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required>
+        </div>
+        <div class="form-row">
+            <label for="role">I am a…</label>
+            <select id="role" name="role" required>
+                <option value="coach">Coach</option>
+                <option value="recruiter">Recruiter / academy</option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Sign up</button>
+    </form>
+</section>
+{% endblock %}

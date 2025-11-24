@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Khelo Coach – Post a Job{% endblock %}
+
+{% block content %}
+<section class="section" data-reveal>
+    <div class="section-header">
+        <div>
+            <h1 class="section-title">Post a job</h1>
+            <p class="section-subtitle">Share your requirement with coaches.</p>
+        </div>
+    </div>
+
+    <form method="post" class="form-card" style="max-width:640px;">
+        <div class="form-row">
+            <label for="title">Job title</label>
+            <input id="title" name="title" required>
+        </div>
+
+        <div class="form-row">
+            <label for="sport">Sport (optional)</label>
+            <input id="sport" name="sport">
+        </div>
+
+        <div class="form-row">
+            <label for="location">Location</label>
+            <input id="location" name="location" required>
+        </div>
+
+        <div class="form-row">
+            <label for="salary">Salary / fee band</label>
+            <input id="salary" name="salary">
+        </div>
+
+        <div class="form-row">
+            <label for="experience_required">Experience required</label>
+            <input id="experience_required" name="experience_required">
+        </div>
+
+        <div class="form-row">
+            <label for="description">Description</label>
+            <textarea id="description" name="description"></textarea>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Post job</button>
+    </form>
+</section>
+{% endblock %}
