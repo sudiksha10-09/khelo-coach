@@ -1,13 +1,10 @@
-# app.py
 import os
 from dotenv import load_dotenv
 
-# Load .env first so os.getenv() works below
-load_dotenv()
-
+load_dotenv()  # load variables from .env
 from flask import (
     Flask, render_template, request, redirect,
-    url_for, flash, send_from_directory
+    url_for, flash
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
@@ -17,33 +14,34 @@ from flask_login import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
-# Optional integrations (Authlib + Google Sheets)
+# Optional integrations (Google SSO + Google Sheets)
 try:
     from authlib.integrations.flask_client import OAuth
-except Exception:
+except ImportError:
     OAuth = None
 
 try:
     import gspread
     from google.oauth2.service_account import Credentials
-except Exception:
+except ImportError:
     gspread = None
     Credentials = None
+
 
 # -----------------------------------------------------------------------------
 # APP + DB CONFIG
 # -----------------------------------------------------------------------------
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
+app = Flask(__name__)
 
-# Secret key, read from .env or fallback (change in production)
+# Secret key (override in env on Render)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-change-me")
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 sqlite_path = os.path.join(BASE_DIR, "khelo_coach.db")
 default_sqlite_uri = "sqlite:///" + sqlite_path
 
-# Use DATABASE_URL (Postgres on Render) if provided, else sqlite for local dev
+# If DATABASE_URL is set (e.g. Render Postgres), use that. Otherwise SQLite.
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", default_sqlite_uri)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -51,7 +49,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max upload
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
 
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_RESUME_EXTENSIONS = {"pdf", "doc", "docx"}
@@ -63,12 +61,7 @@ login_manager.login_view = "login"
 
 
 def allowed_file(filename: str, allowed_extensions: set) -> bool:
-    return (
-        bool(filename)
-        and "."
-        in filename
-        and filename.rsplit(".", 1)[1].lower() in allowed_extensions
-    )
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_extensions
 
 
 # -----------------------------------------------------------------------------
@@ -105,7 +98,7 @@ class CoachProfile(db.Model):
 
     sport = db.Column(db.String(50), nullable=False)
     location = db.Column(db.String(100), nullable=False)
-    experience_years = db.Column(db.Integer, nullable=False, default=0)
+    experience_years = db.Column(db.Integer, nullable=False)
 
     certificates = db.Column(db.String(255))
     locations_served = db.Column(db.String(255))
@@ -153,18 +146,14 @@ class JobApplication(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    # SQLAlchemy 2.x style
-    try:
-        return db.session.get(User, int(user_id))
-    except Exception:
-        return None
+    # Use SQLAlchemy 2.x style
+    return db.session.get(User, int(user_id))
 
 
 # -----------------------------------------------------------------------------
 # GOOGLE SHEETS INTEGRATION (OPTIONAL)
 # -----------------------------------------------------------------------------
-
-GOOGLE_SHEETS_ID = os.getenv("GOOGLE_SHEETS_ID")
+GOOGLE_SHEETS_ID = os.getenv("GOOGLE_SHEETS_ID")  # and set this env var
 GOOGLE_CREDS_FILE = os.getenv("GOOGLE_CREDS_FILE", "google_creds.json")
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
@@ -172,13 +161,15 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 def get_sheet():
     """
     Returns a gspread worksheet if configured, otherwise None.
-    Safe for local development: it will return None when not configured.
+    Safe for local development (no crash if not set).
     """
     if not (GOOGLE_SHEETS_ID and gspread and Credentials):
         return None
 
     try:
-        creds = Credentials.from_service_account_file(GOOGLE_CREDS_FILE, scopes=SCOPES)
+        creds = Credentials.from_service_account_file(
+            GOOGLE_CREDS_FILE, scopes=SCOPES
+        )
         client = gspread.authorize(creds)
         return client.open_by_key(GOOGLE_SHEETS_ID).sheet1
     except Exception as e:
@@ -187,19 +178,18 @@ def get_sheet():
 
 
 # -----------------------------------------------------------------------------
-# GOOGLE SSO (Authlib - OpenID Connect)
+# GOOGLE SSO (Authlib)
 # -----------------------------------------------------------------------------
 
 oauth = OAuth(app) if OAuth else None
 google_oauth = None
 
-# Register OIDC-enabled Google provider if credentials present
 if oauth and os.getenv("GOOGLE_CLIENT_ID") and os.getenv("GOOGLE_CLIENT_SECRET"):
     google_oauth = oauth.register(
         name="google",
         client_id=os.getenv("GOOGLE_CLIENT_ID"),
         client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-        # Use the OpenID Connect discovery endpoint (recommended)
+        # Fixed server metadata URL for Google
         server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
         client_kwargs={"scope": "openid email profile"},
     )
@@ -221,7 +211,7 @@ def home():
     )
 
 
-# ---------- Coach listing & profile ----------------------------------------
+# ---------------------- Coach listing & profile ------------------------------
 
 @app.route("/coaches")
 def coach_listing():
@@ -261,7 +251,7 @@ def coach_profile(coach_id):
     return render_template("coach_profile.html", coach=coach)
 
 
-# ---------- Become / edit coach profile -----------------------------------
+# ------------------- Become / edit coach profile ----------------------------
 
 @app.route("/become-a-coach", methods=["GET", "POST"])
 @login_required
@@ -276,12 +266,9 @@ def become_coach():
         if not profile:
             profile = CoachProfile(user_id=current_user.id)
 
-        profile.sport = request.form.get("sport") or ""
-        profile.location = request.form.get("location") or ""
-        try:
-            profile.experience_years = int(request.form.get("experience") or 0)
-        except ValueError:
-            profile.experience_years = 0
+        profile.sport = request.form.get("sport")
+        profile.location = request.form.get("location")
+        profile.experience_years = int(request.form.get("experience") or 0)
         profile.certificates = request.form.get("certificates")
         profile.locations_served = request.form.get("locations_served")
         profile.rate = request.form.get("rate")
@@ -289,11 +276,12 @@ def become_coach():
         profile.bio = request.form.get("bio")
         profile.photo_url = request.form.get("photo_url")
 
-        # Handle image file upload
+        # Handle image upload
         photo_file = request.files.get("photo_upload")
         if photo_file and photo_file.filename:
             if allowed_file(photo_file.filename, ALLOWED_IMAGE_EXTENSIONS):
                 filename = secure_filename(photo_file.filename)
+                # avoid overwrite by adding user id
                 base, ext = os.path.splitext(filename)
                 filename = f"coach_{current_user.id}_{base}{ext}"
                 save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
@@ -323,7 +311,7 @@ def become_coach():
     return render_template("become_coach.html", profile=profile)
 
 
-# ---------- Jobs listing, posting, applying --------------------------------
+# ---------------------- Jobs listing, posting, applying ---------------------
 
 @app.route("/jobs")
 def jobs_listing():
@@ -337,7 +325,12 @@ def jobs_listing():
         query = query.filter(Job.location.ilike(f"%{location}%"))
 
     jobs = query.all()
-    return render_template("jobs_listing.html", jobs=jobs, sport=sport, location=location)
+    return render_template(
+        "jobs_listing.html",
+        jobs=jobs,
+        sport=sport,
+        location=location,
+    )
 
 
 @app.route("/jobs/new", methods=["GET", "POST"])
@@ -430,12 +423,11 @@ def apply_for_job(job_id):
     return render_template("apply_for_job.html", job=job)
 
 
-# ---------- AUTH: combined login + signup -----------------------------------
+# ---------------------- AUTH: register, login, logout -----------------------
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        # login form posted
         email = request.form.get("email")
         password = request.form.get("password")
 
@@ -447,7 +439,7 @@ def login():
 
         flash("Invalid credentials.", "danger")
 
-    # show combined auth page (login & signup side-by-side)
+    # render combined page, with login tab active
     return render_template(
         "auth.html",
         mode="login",
@@ -461,7 +453,7 @@ def register():
         full_name = request.form.get("full_name")
         email = request.form.get("email")
         password = request.form.get("password")
-        role = request.form.get("role") or "coach"
+        role = request.form.get("role")  # coach / recruiter
 
         if User.query.filter_by(email=email).first():
             flash("Email already registered.", "danger")
@@ -476,12 +468,12 @@ def register():
         flash("Registration successful.", "success")
         return redirect(url_for("home"))
 
+    # render combined page, with signup tab active
     return render_template(
         "auth.html",
         mode="signup",
         google_oauth_enabled=bool(google_oauth),
     )
-
 
 @app.route("/logout")
 @login_required
@@ -491,7 +483,7 @@ def logout():
     return redirect(url_for("home"))
 
 
-# ---------- Google SSO routes -----------------------------------------------
+# ---------------------- Google SSO routes (FIXED) ------------------------
 
 @app.route("/login/google")
 def login_google():
@@ -509,30 +501,22 @@ def auth_google_callback():
         flash("Google login not configured.", "warning")
         return redirect(url_for("login"))
 
-    # Exchange code for token and fetch userinfo using OIDC discovery
+    # 1. Exchange code for token (automatically validates JWKS now)
     token = google_oauth.authorize_access_token()
-    # Preferred: use .userinfo() when registered with server_metadata_url
-    try:
-        userinfo = google_oauth.userinfo()
-    except Exception:
-        # fallback to manual userinfo endpoint
-        resp = google_oauth.get("userinfo")
-        userinfo = resp.json() if resp else None
-
+    
+    # 2. Get user info (updated to work with server_metadata_url)
+    userinfo = google_oauth.userinfo()
+    
     if not userinfo:
-        flash("Could not fetch Google user info.", "danger")
-        return redirect(url_for("login"))
+         flash("Could not fetch Google user info.", "danger")
+         return redirect(url_for("login"))
 
     email = userinfo.get("email")
-    name = userinfo.get("name") or (email.split("@")[0] if email else "Google User")
-
-    if not email:
-        flash("Google account didn't return an email. Try another account.", "danger")
-        return redirect(url_for("login"))
+    name = userinfo.get("name") or email.split("@")[0]
 
     user = User.query.filter_by(email=email).first()
     if not user:
-        # default to coach role for SSO signups; you can show a role selection later
+        # default to coach; later you can allow role selection
         user = User(full_name=name, email=email, role="coach", password_hash="")
         db.session.add(user)
         db.session.commit()
@@ -541,27 +525,69 @@ def auth_google_callback():
     flash("Logged in with Google.", "success")
     return redirect(url_for("home"))
 
+# -----------------------------------------------------------------------------
+# AUTO-SEEDING FOR RENDER (Since Shell is unavailable)
+# -----------------------------------------------------------------------------
 
-# ---------- Serve uploaded files (download) ---------------------------------
+def setup_database():
+    """
+    Checks if tables exist, creates them, and adds seed data if empty.
+    Runs automatically on app startup.
+    """
+    with app.app_context():
+        # 1. Create tables
+        db.create_all()
+        
+        # 2. Check if data exists
+        if User.query.first():
+            return  # Data exists, do nothing
 
-@app.route("/uploads/<path:filename>")
-def uploaded_file(filename):
-    # public route to download uploaded files (resumes / images)
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
+        print("🌱 Seeding database with initial data...")
+        
+        # Create users
+        coach1 = User(full_name="Nishant Joshi", email="nishant@example.com", role="coach")
+        coach1.set_password("password123")
+        coach2 = User(full_name="Aisha Khan", email="aisha@example.com", role="coach")
+        coach2.set_password("password123")
+        recruiter1 = User(full_name="Elite Sports Academy", email="academy@example.com", role="recruiter")
+        recruiter1.set_password("password123")
 
+        db.session.add_all([coach1, coach2, recruiter1])
+        db.session.commit()
 
-# ---------------------------------------------------------------------------
+        # Create profiles
+        profile1 = CoachProfile(
+            user_id=coach1.id, sport="Football", location="Gurugram", experience_years=20,
+            certificates="AFC C License", locations_served="Gurugram", 
+            rate="₹1,500/session", availability="Weekends", 
+            bio="Senior football coach with 20 years experience."
+        )
+        profile2 = CoachProfile(
+            user_id=coach2.id, sport="Basketball", location="Mumbai", experience_years=7,
+            certificates="FIBA L1", locations_served="Mumbai", 
+            rate="₹1,200/session", availability="Evenings", 
+            bio="Passionate youth basketball trainer."
+        )
+        db.session.add_all([profile1, profile2])
+
+        # Create jobs
+        job1 = Job(
+            recruiter_id=recruiter1.id, title="Football Coach – School Team", sport="Football", 
+            location="Mumbai", salary="₹25k/month", experience_required="2y", 
+            description="Managing U-16 boys team."
+        )
+        job2 = Job(
+            recruiter_id=recruiter1.id, title="Cricket Coach", sport="Cricket", 
+            location="Pune", salary="₹30k/month", experience_required="3y", 
+            description="Weekend academy coach."
+        )
+        db.session.add_all([job1, job2])
+        
+        db.session.commit()
+        print("✅ Database seeded successfully!")
+
+# Run the setup immediately when this file is imported/run
+setup_database()
 
 if __name__ == "__main__":
-    # Helpful: If you want to (re)create tables from this file:
-    #   python app.py init-db
-    import sys
-
-    if len(sys.argv) > 1 and sys.argv[1] == "init-db":
-        with app.app_context():
-            db.create_all()
-            print("✅ DB tables created (or already existed).")
-        sys.exit(0)
-
-    # Regular run
     app.run(debug=True)
