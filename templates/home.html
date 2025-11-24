@@ -11,6 +11,11 @@
             <h1 class="hero-heading">
                 Find verified coaches for your academies, schools & sports clubs.
             </h1>
+            <img src="{{ url_for('static', filename='videos/golf_coach.gif') }}" 
+                width="300" 
+                class="hero-animation" 
+                alt="Golf Coach Animation">
+
             <p class="hero-subtitle">
                 A focused marketplace for sports coaches and recruiters. Compare profiles,
                 view experience and hire with confidence.
@@ -40,22 +45,80 @@
             </div>
         </div>
 
-        <aside class="hero-card">
-            <!-- Replace with your own illustration / image -->
-            <div class="hero-card-title">Live snapshot</div>
-            <p style="font-size:13px;color:#6b7280;">Sample data for prototype</p>
+        <aside class="hero-card hero-card--dynamic" aria-label="Live snapshot">
+    <!-- optional hero illustration (right side) -->
+    {% if hero_img_url %}
+      <div style="text-align:center;margin-bottom:10px;">
+        <img src="{{ url_for('static', filename='images/hero.png') }}" 
+             alt="Hero illustration" 
+             style="max-width:220px; width:100%; border-radius:12px; box-shadow:var(--shadow-soft);">
+    </div>
+    {% endif %}
 
-            <div class="hero-card-tags">
-                <span class="tag-pill">⚽ Football · 20+ yrs</span>
-                <span class="tag-pill">🏏 Cricket · Pune</span>
-                <span class="tag-pill">🏊‍♀️ Swimming · Bengaluru</span>
-                <span class="tag-pill">🥋 Martial Arts · Kids</span>
-            </div>
+    <div class="hero-card-title">Live snapshot</div>
+    <p style="font-size:13px;color:#6b7280;margin-top:4px;">Sample data for prototype</p>
 
-            <p style="margin-top:12px;font-size:12px;color:#6b7280;">
-                Recruiters get a clean shortlist instead of random WhatsApp forwards.
-            </p>
-        </aside>
+    <div style="margin-top:10px;">
+        <div style="font-weight:600; margin-bottom:6px;">
+            Platform activity
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <div class="stat-pill">{{ snapshot_total_coaches }} coaches</div>
+            <div class="stat-pill">{{ snapshot_total_jobs }} jobs</div>
+        </div>
+    </div>
+
+    <div style="margin-top:12px;">
+        <div style="font-weight:600; margin-bottom:6px;">Top sports</div>
+        <div class="hero-card-tags">
+            {% if snapshot_sports %}
+                {% for tag in snapshot_sports %}
+                    <span class="tag-pill">{{ tag }}</span>
+                {% endfor %}
+            {% else %}
+                <span class="tag-pill">No sports yet</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="margin-top:10px;">
+        <div style="font-weight:600; margin-bottom:6px;">Top locations</div>
+        <div class="hero-card-tags">
+            {% if snapshot_locations %}
+                {% for tag in snapshot_locations %}
+                    <span class="tag-pill">{{ tag }}</span>
+                {% endfor %}
+            {% else %}
+                <span class="tag-pill">No data</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="margin-top:12px;">
+        <div style="font-weight:600; margin-bottom:8px;">Recent coaches</div>
+        {% if snapshot_recent_coaches %}
+            <ul style="list-style:none;padding:0;margin:0;">
+                {% for rc in snapshot_recent_coaches %}
+                <li style="margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+                    <img src="{{ url_for('uploaded_file', filename=rc.photo_filename) if rc.photo_filename else url_for('static', filename='img/avatar-placeholder.png') }}"
+                         alt="{{ rc.user.full_name }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;box-shadow:var(--shadow-mini);">
+                    <div style="font-size:13px;">
+                        <div style="font-weight:600;">{{ rc.user.full_name }}</div>
+                        <div style="color:#6b7280;font-size:12px;">{{ rc.sport }} · {{ rc.location }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div style="font-size:13px;color:#6b7280;">No coaches yet — ask a coach to sign up.</div>
+        {% endif %}
+    </div>
+
+    <p style="margin-top:12px;font-size:12px;color:#6b7280;">
+        Recruiters get a clean shortlist instead of random WhatsApp forwards.
+    </p>
+</aside>
+
     </div>
 </section>
 
@@ -160,7 +223,7 @@
         </div>
     </div>
 
-    <video src="{{ url_for('static', filename='video/demo.mp4') }}"
+    <video src="{{ url_for('static', filename='videos/demo.mp4') }}"
            muted autoplay loop playsinline
            style="width:100%; border-radius:18px; box-shadow:var(--shadow-soft); max-height:360px; object-fit:cover;">
         Your browser does not support the video tag.

@@ -102,6 +102,31 @@ body {
 }
 
 /* --------- Hero + parallax wrapper --------- */
+.hero-wrapper {
+    position: relative;
+    padding: 64px 0 80px;
+    /* keep page background separate */
+}
+
+.hero {
+    position: relative;
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+/* This is the gradient block */
+.hero-bg {
+    position: absolute;
+    inset: 0;               /* top:0; right:0; bottom:0; left:0; */
+    margin: 0 auto;
+    max-width: 1120px;      /* same as .hero */
+    border-radius: 32px;
+    background: linear-gradient(135deg, #FFEAA6 0%, #FFFFFF 40%, #B2C6FF 100%);
+    z-index: -1;
+}
 
 .hero-wrapper {
     position: relative;
@@ -118,10 +143,15 @@ body {
     inset: 0;
     z-index: -1;
     background:
-      radial-gradient(circle at top left, #ffeaa6 0, transparent 55%),
-      radial-gradient(circle at bottom right, #b2c6ff 0, transparent 55%);
+        radial-gradient(circle at top left, #ffeaa6 0, transparent 55%),
+        radial-gradient(circle at bottom right, #b2c6ff 0, transparent 55%);
     opacity: 0.6;
-    transition: transform 0.3s ease;
+    
+    /* 1. REMOVED the transition line */
+    /* transition: transform 0.3s ease; */
+
+    /* 2. ADDED this line to stop movement */
+    transform: none !important; 
 }
 
 .hero {
@@ -542,4 +572,27 @@ body {
     .hero-wrapper {
         padding-inline: 18px;
     }
+}
+.hero-card--dynamic {
+    border-radius: 14px;
+    padding: 18px;
+    background: #fff;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+}
+
+.tag-pill, .stat-pill {
+    display:inline-block;
+    background: #f3f4f6;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    color:#111827;
+    margin-right:8px;
+    margin-bottom:6px;
+    box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+}
+
+.stat-pill {
+    background: linear-gradient(90deg, rgba(255,138,102,0.1), rgba(255,234,166,0.06));
+    font-weight:600;
 }

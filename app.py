@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+from sqlalchemy import func
+import traceback
 
 load_dotenv()  # load variables from .env
 from flask import (
@@ -154,28 +156,37 @@ def load_user(user_id):
 # GOOGLE SHEETS INTEGRATION (OPTIONAL)
 # -----------------------------------------------------------------------------
 GOOGLE_SHEETS_ID = os.getenv("GOOGLE_SHEETS_ID")  # and set this env var
-GOOGLE_CREDS_FILE = os.getenv("GOOGLE_CREDS_FILE", "google_creds.json")
+GOOGLE_CREDS_FILE = os.getenv("GOOGLE_CREDS_FILE")
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-
 
 def get_sheet():
     """
     Returns a gspread worksheet if configured, otherwise None.
-    Safe for local development (no crash if not set).
+    Also prints a detailed error in the console when something goes wrong.
     """
-    if not (GOOGLE_SHEETS_ID and gspread and Credentials):
+    # 1. Check basic config first
+    if not GOOGLE_SHEETS_ID:
+        print("⚠️ Google Sheets error: GOOGLE_SHEETS_ID is not set (check .env).")
+        return None
+    if not gspread or not Credentials:
+        print("⚠️ Google Sheets error: gspread or google-auth not installed.")
+        return None
+    if not os.path.exists(GOOGLE_CREDS_FILE):
+        print(f"⚠️ Google Sheets error: creds file not found at '{GOOGLE_CREDS_FILE}'.")
         return None
 
+    # 2. Try connecting
     try:
-        creds = Credentials.from_service_account_file(
-            GOOGLE_CREDS_FILE, scopes=SCOPES
-        )
+        creds = Credentials.from_service_account_file(GOOGLE_CREDS_FILE, scopes=SCOPES)
         client = gspread.authorize(creds)
-        return client.open_by_key(GOOGLE_SHEETS_ID).sheet1
+        sheet = client.open_by_key(GOOGLE_SHEETS_ID).sheet1
+        # Optional: print once so you know it worked
+        # print("✅ Connected to Google Sheet:", GOOGLE_SHEETS_ID)
+        return sheet
     except Exception as e:
-        print("⚠️ Google Sheets error:", e)
+        print("⚠️ Google Sheets error (detailed):", repr(e))
+        traceback.print_exc()
         return None
-
 
 # -----------------------------------------------------------------------------
 # GOOGLE SSO (Authlib)
@@ -201,15 +212,59 @@ if oauth and os.getenv("GOOGLE_CLIENT_ID") and os.getenv("GOOGLE_CLIENT_SECRET")
 
 @app.route("/")
 def home():
+    # Featured items (existing)
     featured_coaches = CoachProfile.query.limit(3).all()
     featured_jobs = Job.query.limit(3).all()
+
+    # --- Live snapshot data (dynamic) ---
+    # total counts
+    total_coaches = db.session.query(func.count(CoachProfile.id)).scalar() or 0
+    total_jobs = db.session.query(func.count(Job.id)).scalar() or 0
+
+    # top sports by number of coach profiles (limit 4)
+    top_sports = (
+        db.session.query(CoachProfile.sport, func.count(CoachProfile.id).label("cnt"))
+        .group_by(CoachProfile.sport)
+        .order_by(func.count(CoachProfile.id).desc())
+        .limit(4)
+        .all()
+    )
+    # convert to simple list of strings "Sport · X"
+    top_sports_tags = [f"{row.sport} · {row.cnt} coaches" for row in top_sports if row.sport]
+
+    # top locations by coaches (limit 4)
+    top_locations = (
+        db.session.query(CoachProfile.location, func.count(CoachProfile.id).label("cnt"))
+        .group_by(CoachProfile.location)
+        .order_by(func.count(CoachProfile.id).desc())
+        .limit(4)
+        .all()
+    )
+    top_location_tags = [f"{row.location} · {row.cnt}" for row in top_locations if row.location]
+
+    # Recent coaches (show name, sport, location) - limit 3
+    recent_coaches = (
+        db.session.query(CoachProfile).order_by(CoachProfile.id.desc()).limit(3).all()
+    )
+
+    # hero image path (you uploaded an illustration). We pass it to template.
+    # Developer note: this is the uploaded local path you supplied — if you want it served
+    # via /static, copy the file to static/img and use that URL instead.
+    hero_img_url = "/mnt/data/287b4d9f-3c48-45bd-97ca-11c1b1935dc2.png"
+
     return render_template(
         "home.html",
         featured_coaches=featured_coaches,
         featured_jobs=featured_jobs,
         google_oauth_enabled=bool(google_oauth),
+        # dynamic snapshot
+        snapshot_total_coaches=total_coaches,
+        snapshot_total_jobs=total_jobs,
+        snapshot_sports=top_sports_tags,
+        snapshot_locations=top_location_tags,
+        snapshot_recent_coaches=recent_coaches,
+        hero_img_url=hero_img_url,  # template will use this for hero illustration
     )
-
 
 # ---------------------- Coach listing & profile ------------------------------
 
@@ -525,9 +580,11 @@ def auth_google_callback():
     flash("Logged in with Google.", "success")
     return redirect(url_for("home"))
 
-# -----------------------------------------------------------------------------
-# AUTO-SEEDING FOR RENDER (Since Shell is unavailable)
-# -----------------------------------------------------------------------------
+from flask import send_from_directory
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 def setup_database():
     """
