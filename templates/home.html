@@ -31,12 +31,20 @@
             </div>
 
             <div class="search-wrapper">
-                <div class="search-box">
-                    <span>🔍</span>
-                    <input type="text"
-                           placeholder="Search coming soon – use filters on coaches & jobs pages">
-                </div>
-            </div>
+    <form class="search-box" method="get" action="{{ url_for('coach_listing') }}">
+        <span>🔍</span>
+        <input
+            type="text"
+            name="q"
+            placeholder="Search coaches by name, sport, city..."
+            value="{{ request.args.get('q', '') }}"
+        >
+        <button type="submit" class="btn btn-small btn-primary search-btn">
+            Search
+        </button>
+    </form>
+</div>
+
 
             <div class="hero-stats">
                 <span><strong>Dual-sided</strong> · Coaches & recruiters</span>

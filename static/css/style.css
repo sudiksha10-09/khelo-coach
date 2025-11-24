@@ -596,3 +596,124 @@ body {
     background: linear-gradient(90deg, rgba(255,138,102,0.1), rgba(255,234,166,0.06));
     font-weight:600;
 }
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-box input[type="text"] {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+}
+
+.search-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+}
+/* =========================
+   Mobile-friendly overrides
+   (append to end of style.css)
+   ========================= */
+
+/* Increase tap targets and reduce paddings on small screens */
+@media (max-width: 900px) {
+  .top-bar { padding: 12px 18px; }
+  .brand a { font-size: 20px; }
+  .nav-buttons { gap: 8px; }
+  .nav-btn { padding: 8px 12px; font-size: 13px; }
+
+  .page { padding: 20px 18px 36px; }
+
+  /* Hero: stack, reduce gaps */
+  .hero-wrapper { padding: 36px 12px 40px; }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  .hero-heading { font-size: 26px; }
+  .hero-subtitle { max-width: none; font-size: 14px; }
+
+  /* Move hero-card under the hero text (full width) */
+  .hero-card { width: 100%; padding: 14px 12px; }
+
+  /* Make illustration responsive */
+  .hero-animation,
+  .hero-illustration,
+  .hero img {
+    width: 100%;
+    height: auto;
+    max-width: 420px;
+    display: block;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Make ctas wrap and increase hit area */
+  .hero-cta-row { flex-wrap: wrap; gap: 10px; }
+  .btn { padding: 10px 14px; }
+
+  /* Search becomes full width */
+  .search-wrapper { max-width: 100%; margin-top: 14px; }
+  .search-box { width: 100%; padding: 8px 12px; }
+  .search-btn { padding: 8px 12px; }
+
+  /* smaller card grid on tablets */
+  .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+  /* hero-bg: keep the gradient full-width but reduce radius */
+  .hero-bg { border-radius: 14px; opacity: 0.85; }
+}
+
+/* Small phones: compress font-size, stack everything vertically */
+@media (max-width: 640px) {
+  .top-bar { padding: 10px 12px; }
+  .brand a { font-size: 18px; }
+  .nav-buttons { gap: 6px; }
+
+  .hero-wrapper { padding: 18px 12px; margin-top: 18px; border-radius: 12px; }
+  .hero-heading { font-size: 20px; line-height: 1.18; }
+  .hero-subtitle { font-size: 13px; color: var(--brand-muted); }
+
+  /* Hide the right-side card to reduce vertical scroll; can be shown via a "View snapshot" link */
+  .hero-card { display: none; }
+
+  /* Ensure the hero illustration sits above CTAs */
+  .hero img, .hero-animation { max-width: 100%; margin: 6px 0 10px; }
+
+  /* Single column grids */
+  .card-grid { grid-template-columns: 1fr; gap: 12px; }
+
+  /* Make forms and uploads easy to tap */
+  .form-row input,
+  .form-row textarea,
+  .filter-row input,
+  .filter-row select {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  /* Make profile header tighter */
+  .profile-avatar { width: 56px; height: 56px; border-radius: 12px; font-size: 26px; }
+  .profile-name { font-size: 18px; }
+
+  /* Ensure footer spacing */
+  .footer { padding-bottom: 36px; }
+}
+
+/* Accessibility hints: increase focus visible area for small screens */
+@media (max-width: 900px) {
+  .nav-btn:focus, .btn:focus, .search-box input:focus {
+    outline: 3px solid rgba(99,102,241,0.12);
+    outline-offset: 2px;
+  }
+}
+
+/* Optional: small tweak for hero-bg to avoid sharp cut at bottom on very small screens */
+@media (max-width: 420px) {
+  .hero-bg { background-size: cover; background-position: center; }
+}
